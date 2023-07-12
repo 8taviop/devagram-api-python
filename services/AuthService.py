@@ -13,7 +13,7 @@ JWT_SECRET = config('JWT_SECRET')
 def gerar_token_jwt(usuario_id: str) -> str:
     payload = {
         "usuario_id": usuario_id,
-        "tempo_expiracao": time.time() + 600
+        "tempo_expiracao": time.time() + 3600
     }
 
     token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
