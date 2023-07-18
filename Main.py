@@ -7,6 +7,7 @@ app = FastAPI()
 app.include_router(UsuarioRoute, tags=["Usuário"], prefix="/api/usuario")
 app.include_router(AutenticacaoRoute, tags=["Autenticação"], prefix="/api/auth")
 
+
 @app.get("/api/health", tags=["Health"])
 async def health():
     return {
