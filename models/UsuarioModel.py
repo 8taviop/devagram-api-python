@@ -1,5 +1,8 @@
-from fastapi import Form
+from fastapi import Form, UploadFile
 from pydantic import BaseModel, Field, EmailStr
+from utils.DecoratorUtil import DecoratorUtil
+
+decoratorUtil = DecoratorUtil()
 
 
 class UsuarioModel(BaseModel):
@@ -20,18 +23,7 @@ class UsuarioModel(BaseModel):
         }
 
 
-def form_body(cls):
-    cls.__signature__ = cls.__signature__.replace(
-        parameters=[
-            arg.replace(default=Form(...))
-            for arg in cls.__signature__.parameters.values()
-        ]
-    )
-
-    return cls
-
-
-@form_body
+@decoratorUtil.form_body
 class UsuarioCriarModel(BaseModel):
     nome: str = Field(...)
     email: EmailStr = Field(...)
@@ -46,6 +38,7 @@ class UsuarioCriarModel(BaseModel):
             }
         }
 
+
 class UsuarioLoginModel(BaseModel):
     email: EmailStr = Field(...)
     senha: str = Field(...)
@@ -55,5 +48,22 @@ class UsuarioLoginModel(BaseModel):
             "usuario": {
                 "email": "fulano@gmail.com",
                 "senha": "Senha123!",
+            }
+        }
+
+
+@decoratorUtil.form_body
+class UsuarioAtualizarModel(BaseModel):
+    nome: str = Field(...)
+    email: EmailStr = Field(...)
+    senha: str = Field(...)
+    foto: UploadFile = Field(...)
+
+    class Config:
+        schema_extra = {
+            "usuario": {
+                "nome": "Fulano de tal",
+                "email": "fulano@gmail.com",
+                "senha": "Senha123!"
             }
         }

@@ -17,16 +17,6 @@ usuario_collection = database.get_collection("usuario")
 converterUtil = ConverterUtil()
 
 
-def usuario_helper(usuario):
-    return {
-        "id": str(usuario["_id"]),
-        "nome": usuario["nome"],
-        "email": usuario["email"],
-        "senha": usuario["senha"],
-        "foto": usuario["foto"] if "foto" in usuario else ""
-    }
-
-
 class UsuarioRepository:
     async def criar_usuario(self, usuario: UsuarioCriarModel) -> dict:
         usuario.senha = gerar_senha_criptografada(usuario.senha)
@@ -53,10 +43,13 @@ class UsuarioRepository:
             return converterUtil.usuario_converter(usuario)
 
     async def atualizar_usuario(self, id: str, dados_usuario: dict):
+        if "senha" in dados_usuario:
+            dados_usuario['senha'] = gerar_senha_criptografada(dados_usuario['senha'])
+
         usuario = await usuario_collection.find_one({"_id": ObjectId(id)})
 
         if usuario:
-            usuario_atualizado = await usuario_collection.update_one(
+            await usuario_collection.update_one(
                 {"_id": ObjectId(id)}, {"$set": dados_usuario}
             )
 

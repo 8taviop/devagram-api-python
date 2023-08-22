@@ -1,4 +1,7 @@
-from models.UsuarioModel import UsuarioCriarModel
+import os
+from datetime import datetime
+
+from models.UsuarioModel import UsuarioCriarModel, UsuarioAtualizarModel
 from providers.AWSProvider import AWSProvider
 from repositories.UsuarioRepository import UsuarioRepository
 
@@ -52,6 +55,52 @@ class UsuarioService:
                     "dados": usuario_encontrado,
                     "status": 200
                 }
+            else:
+                return {
+                    "mensagem": f"Usuário com o id {id} não foi encontrado.",
+                    "dados": "",
+                    "status": 404
+                }
+
+        except Exception as erro:
+            print(erro)
+            return {
+                "mensagem": "Erro interno no servidor",
+                "dados": str(erro),
+                "status": 500
+            }
+
+    async def atualizar_usuario_logado(self, id, usuario_atualizar: UsuarioAtualizarModel):
+        try:
+            usuario_encontrado = await usuarioRepository.buscar_usuario(id)
+
+            if usuario_encontrado:
+                usuario_dict = usuario_atualizar.__dict__
+
+                try:
+                    caminho_foto = f'files/foto-{datetime.now().strftime("%H%M%S")}.png'
+
+                    with open(caminho_foto, 'wb+') as arquivo:
+                        arquivo.write(usuario_atualizar.foto.file.read())
+
+                    url_foto = awsProvider.upload_arquivo_s3(
+                        f'fotos-perfil/{id}.png',
+                        caminho_foto
+                    )
+
+                    os.remove(caminho_foto)
+                except Exception as erro:
+                    print(erro)
+
+                usuario_dict['foto'] = url_foto if url_foto is not None else usuario_dict['foto']
+
+                usuario_atualizado = await usuarioRepository.atualizar_usuario(id, usuario_dict)
+                return{
+                    "mensagem": f"Usuário atualizado.",
+                    "dados": usuario_atualizado,
+                    "status": 200
+                }
+
             else:
                 return {
                     "mensagem": f"Usuário com o id {id} não foi encontrado.",
